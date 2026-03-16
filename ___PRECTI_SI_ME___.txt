@@ -1,0 +1,762 @@
+Gemini
+Vývoj vesmírné těžební hry zdarma
+
+Aktivita
+Konverzace s Gemini
+Váš pokyn
+
+
+Mam napad. Chci vytvorit hru pro vice hracu, kterou by mohli hrat kamaradi pres internet. Hra bude vesmes tabulkova. Tematicky by hra byla z prostredi vesmirne planety, na ktere by hraci jakoze pristali. Hraci by pro zacatek rekneme jen tezili par surovin - zvysovali by se jim cisla v tabulce v pruhebu casu. Mohli by vylepsovat tezici budovi a az by vytezili dostatek surovin a vylepsili budovy, tak by vyhrali. Potrebuji poradit s vyberem technologii, aby bylo mozne hru hrat pres internet nebo na internetu a aby to bylo pokud mozno zadarmo.
+
+Odpověď Gemini
+To je skvělý nápad! Klasické tabulkové budovatelské nebo "idle" hry (ve stylu legend jako OGame, Travian nebo Cookie Clicker) jsou fantastickým projektem pro začátek. Jsou zábavné na hraní s kamarády a dají se naprogramovat relativně snadno, protože nepotřebuješ řešit složitou 3D grafiku nebo fyzikální enginy.
+
+Aby to bylo multiplayerové, přístupné přes prohlížeč a ideálně zcela zdarma, postavíme to na moderních webových technologiích. K tomu, aby hra fungovala, potřebuješ tři hlavní části: Frontend (to, co vidí hráč), Backend (mozek hry) a Databázi (kde jsou uložené stavy účtů a suroviny).
+
+Zde je doporučený technologický stack (výběr technologií), který je pro tvůj účel naprosto ideální a má štědré plány zdarma (Free Tiers):
+
+1. Frontend (Uživatelské rozhraní)
+Protože půjde o tabulky, čísla a tlačítka, nepotřebuješ herní enginy jako Unity. Úplně si vystačíš se standardními nástroji pro tvorbu webu.
+
+Technologie: HTML, CSS a JavaScript. Pro snadnější práci s tabulkami a plynulou aktualizaci čísel (aby se stránka nemusela pořád obnovovat) doporučuji použít jednoduchý framework, jako je Vue.js, Svelte nebo React. Svelte je obzvlášť skvělé pro začátečníky, protože jeho kód vypadá skoro jako čisté HTML a JavaScript.
+
+Hosting zdarma: Svoji webovou stránku můžeš zcela zdarma nahrát (hostovat) na služby jako Vercel, Netlify nebo GitHub Pages. Tyto služby jsou stavěné přímo na frontendové aplikace a jsou bleskově rychlé.
+
+2. Backend a Databáze (Dvě cesty)
+Tady se láme chleba. Potřebuješ, aby spolu hráči mohli komunikovat (nebo se alespoň vidět v žebříčku) a aby jejich postup zůstal uložený.
+
+Cesta A: Backend jako Služba (BaaS) – 🏆 Nejlepší volba pro tebe
+Místo toho, abys programoval vlastní server od nuly, použiješ hotovou službu, která za tebe řeší databázi, přihlašování uživatelů a real-time (okamžitou) synchronizaci.
+
+Supabase nebo Firebase.
+
+Proč to zvolit: Obě služby mají obrovský tarif zdarma, který pro hru s kamarády nikdy nevyčerpáš. Nabízejí tzv. "real-time databázi". Pokud hráč A vylepší budovu, do databáze se to zapíše a databáze sama pošle signál hráči B, kterému se okamžitě aktualizuje tabulka na obrazovce. Zvládnou i přihlašování (např. přes e-mail nebo Google účet).
+
+Cesta B: Vlastní server v Node.js – 🛠️ Více kontroly, více práce
+Pokud chceš mít absolutní kontrolu nad tím, jak hra počítá suroviny na pozadí a chceš se naučit psát vlastní backend.
+
+Technologie: Node.js + framework Express + knihovna Socket.io (pro okamžitou komunikaci mezi hráči).
+
+Databáze: MongoDB Atlas (mají cloudovou databázi zdarma navždy).
+
+Hosting zdarma: Render.com nebo Railway.app. Mají tarify zdarma, ale u Renderu server po 15 minutách nečinnosti "usne" a první probuzení pak trvá třeba 30 sekund.
+
+💡 Klíčový trik pro vývoj "těžební" hry (Idle mechanika)
+U her, kde se suroviny těží v průběhu času, nesmíš dělat tu chybu, že bys na serveru spustil časovač, který by každou vteřinu udělal suroviny = suroviny + 1. To by ti rychle zahltilo server.
+
+Dělá se to "pasivně". Do databáze uložíš pouze:
+
+Aktuální stav surovin (R 
+current
+​
+ )
+
+Rychlost těžby za sekundu (V)
+
+Časové razítko poslední aktualizace (T 
+last
+​
+ )
+
+Když se hráč přihlásí, nebo když chce postavit budovu, server se podívá na aktuální čas (T 
+now
+​
+ ) a spočítá, kolik času uplynulo: Δt=T 
+now
+​
+ −T 
+last
+​
+ . Následně dopočítá nové suroviny pomocí jednoduché rovnice:
+
+R 
+new
+​
+ =R 
+current
+​
+ +(V×Δt)
+
+Díky tomuto triku hra "těží", i když je hráč odpojený a server spí. Vypočítá se to až ve chvíli, kdy je to potřeba.
+
+Jak bych ti doporučil začít:
+
+Založ si projekt na Supabase (bude sloužit jako tvoje databáze a přihlašování).
+
+Rozjeď si jednoduchý Vanilla JavaScript (nebo Svelte) projekt u sebe na počítači.
+
+Propoj je a zkus udělat to, že když klikneš na tlačítko "Těžba", přičte se číslo do databáze a zobrazí se zpět na webu.
+
+Chceš, abychom se podívali na to, jak by přesně vypadala struktura tabulky v databázi pro takovou vesmírnou planetu, nebo bys raději viděl jednoduchou ukázku kódu, jak ten výpočet surovin naprogramovat?
+
+Váš pokyn
+Diky. Zalozil jsem si Supabase a klidne muzeme zkusit pouzit Svelte. Muzes mi zkusit rict, jak bys postupoval dal?
+
+Odpověď Gemini
+Skvělá volba! Kombinace Svelte a Supabase je pro tento typ hry naprosto ideální. Svelte je bleskově rychlý, nepíšeš v něm zbytečně složitý kód a Supabase ti ušetří týdny práce s backendem.
+
+Přesuneme se tedy od teorie k praxi. Rozdělíme to do logických kroků, abys měl pevný základ.
+
+Krok 1: Příprava databáze (Supabase)
+Než začneme programovat, musíme říct Supabase, jaká data budeme ukládat. Přejdi ve svém Supabase projektu do záložky Table Editor a vytvoř novou tabulku. Nazveme ji třeba planets (každý hráč bude mít jednu planetu).
+
+Vytvoř v ní následující sloupce (Columns):
+
+id (typ: uuid, Primary Key) – unikátní identifikátor planety/hráče.
+
+player_name (typ: text) – jméno hráče.
+
+iron_amount (typ: numeric nebo float4) – kolik má hráč aktuálně vytěženého železa. Výchozí hodnota (Default): 0.
+
+mine_level (typ: int4) – úroveň těžební budovy. Výchozí hodnota: 1.
+
+last_updated (typ: timestamptz) – přesný čas, kdy se naposledy stav surovin uložil do databáze. Výchozí hodnota: now().
+
+Poznámka: Pro jednoduchost zatím ignorujeme složité přihlašování (Auth) a budeme brát co řádek, to jeden hráč.
+
+Krok 2: Založení Svelte projektu
+Nyní si vytvoříme samotný web. Budeš k tomu potřebovat mít nainstalované Node.js (pokud nemáš, stáhni si ho z oficiálních stránek).
+
+Otevři si příkazový řádek (Terminál) a spusť tyto příkazy:
+
+Bash
+# Vytvoří nový projekt pomocí nástroje Vite (vybereš framework Svelte a jazyk JavaScript)
+npm create vite@latest vesmirna-hra -- --template svelte
+
+# Přejde do složky projektu
+cd vesmirna-hra
+
+# Nainstaluje potřebné balíčky
+npm install
+Krok 3: Propojení hry se Supabase
+Aby tvůj Svelte kód mohl číst a zapisovat do databáze, musíme přidat oficiální knihovnu od Supabase.
+
+V terminálu, stále ve složce vesmirna-hra, spusť:
+
+Bash
+npm install @supabase/supabase-js
+Následně si ve složce src vytvoř nový soubor a pojmenuj ho supabase.js. Do něj vložíme kód, který tvoji hru spojí s databází. Budeš potřebovat své Project URL a anon public key (najdeš je v Supabase v Project Settings -> API).
+
+JavaScript
+// src/supabase.js
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = 'TVOJE_SUPABASE_URL_ZDE'
+const supabaseKey = 'TVUJ_SUPABASE_ANON_KEY_ZDE'
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+Krok 4: Zobrazení dat na obrazovce (První herní kód)
+Teď to celé oživíme. Otevři soubor src/App.svelte (to je hlavní soubor tvé aplikace), všechno v něm smaž a vlož tam tento základní kód. Tento kód se spojí s databází a vypíše stav tvé planety.
+
+Svelte
+<script>
+  import { onMount } from 'svelte';
+  import { supabase } from './supabase.js';
+
+  let planet = null;
+  let loading = true;
+
+  // Zde si pro testování vlož ID řádku, který sis v Supabase ručně vytvořil
+  const TEST_PLANET_ID = 'tvoje-uuid-z-databaze'; 
+
+  onMount(async () => {
+    // Načtení dat ze Supabase
+    const { data, error } = await supabase
+      .from('planets')
+      .select('*')
+      .eq('id', TEST_PLANET_ID)
+      .single();
+
+    if (error) {
+      console.error("Chyba při načítání:", error);
+    } else {
+      planet = data;
+    }
+    loading = false;
+  });
+</script>
+
+<main>
+  <h1>Vesmírná kolonie</h1>
+
+  {#if loading}
+    <p>Přistávám na planetě...</p>
+  {:else if planet}
+    <div class="dashboard">
+      <h2>Planeta hráče: {planet.player_name}</h2>
+      <p><strong>Železo:</strong> {planet.iron_amount}</p>
+      <p><strong>Úroveň dolu:</strong> {planet.mine_level}</p>
+      
+      <button>Vylepšit důl (Stojí 100 železa)</button>
+    </div>
+  {:else}
+    <p>Planeta nenalezena.</p>
+  {/if}
+</main>
+
+<style>
+  /* Zde později přidáme CSS pro hezčí tabulky a tlačítka */
+  main { font-family: sans-serif; padding: 20px; }
+  .dashboard { border: 1px solid #ccc; padding: 15px; border-radius: 8px; }
+</style>
+Když teď v terminálu spustíš npm run dev, zobrazí se ti lokální webová adresa (např. http://localhost:5173), kde uvidíš svou základní herní obrazovku!
+
+Máš nyní databázi připravenou a web běží na tvém počítači? Pokud ano, chtěl bys, abychom do Svelte kódu přidali ten matematický výpočet (aby železo začalo samo přibývat každou vteřinu na obrazovce na základě úrovně dolu), nebo potřebuješ pomoci s vložením testovacích dat do Supabase?
+
+Váš pokyn
+npm : File C:\Program Files\nodejs\npm.ps1 cannot be loaded because running scripts is disabled on this system.
+
+Odpověď Gemini
+Á, klasika! Narazil jsi na bezpečnostní politiku Windows (PowerShellu), která ve výchozím nastavení blokuje spouštění skriptů. Je to v podstatě takový "zámek na dveřích", který má bránit škodlivým skriptům v běhu, ale pro nás vývojáře je to spíš otravná překážka.
+
+Tady je návod, jak to bleskově opravit přímo ve tvém terminálu (VS Code nebo PowerShell):
+
+Rychlé řešení (pouze pro aktuální okno)
+Pokud nechceš měnit nastavení celého systému, můžeš povolit skripty jen pro toto jedno konkrétní okno terminálu:
+
+PowerShell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+Po zavření a znovuotevření terminálu to budeš muset udělat znovu.
+
+Trvalé řešení (Doporučeno pro vývojáře)
+Aby tě to už nikdy neotravovalo, nastavíme politiku pro tvého uživatele na RemoteSigned. To znamená, že tvoje vlastní skripty poběží, ale stažené skripty z internetu musí mít podpis (což je bezpečný kompromis).
+
+Otevři PowerShell jako Správce (klikni pravým na Start -> Terminál (správce) nebo PowerShell (správce)).
+
+Zadej tento příkaz a potvrď ho stisknutím Y a Enter:
+
+PowerShell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Jak ověřit, že je to v pořádku?
+Zkus teď v tom samém okně, kde ti to házelo chybu, napsat:
+
+Bash
+npm -v
+Pokud se ti vypíše verze (např. 10.x.x), máš vyhráno a můžeš pokračovat v instalaci Svelte!
+
+Až ti to poběží, co dál?
+Můžeme se vrhnout na ten slíbený kód pro automatické přičítání surovin. Chceš, abych ti ukázal, jak ve Svelte vytvořit ten "tikající" efekt, aby hráč viděl, jak mu železo přibývá před očima?
+
+Váš pokyn
+Ano prosim.
+
+Odpověď Gemini
+To je ta nejzábavnější část! Aby hra působila živě, musíme ve Svelte vytvořit tzv. herní smyčku (game loop).
+
+Vtip je v tom, že budeme mít dvě hodnoty:
+
+Serverová hodnota: Ta, kterou jsme stáhli ze Supabase (statické číslo).
+
+Klientská hodnota (Live): Tu budeme v prohlížeči každých 100 milisekund navyšovat, aby hráč viděl, jak mu suroviny rostou.
+
+Tady je upravený kód pro tvůj soubor src/App.svelte. Přidal jsem tam logiku, která počítá přírůstek na základě úrovně dolu:
+
+Svelte
+<script>
+  import { onMount, onDestroy } from 'svelte';
+  import { supabase } from './supabase.js';
+
+  let planet = null;
+  let loading = true;
+  let displayIron = 0; // Tohle číslo uvidí hráč "tikat"
+  let interval;
+
+  // TVOJE ID ZE SUPABASE (vlož sem to svoje z tabulky planets)
+  const TEST_PLANET_ID = 'tvoje-uuid-z-databaze'; 
+
+  // Konstanta: Kolik železa vyprodukuje 1. úroveň dolu za sekundu
+  const BASE_PRODUCTION = 1; 
+
+  onMount(async () => {
+    // 1. Načtení dat ze Supabase
+    const { data, error } = await supabase
+      .from('planets')
+      .select('*')
+      .eq('id', TEST_PLANET_ID)
+      .single();
+
+    if (error) {
+      console.error("Chyba:", error);
+    } else {
+      planet = data;
+      
+      // 2. Výpočet reálného stavu (pokud byl hráč dlouho pryč)
+      const now = new Date();
+      const lastUpdate = new Date(planet.last_updated);
+      const secondsElapsed = (now - lastUpdate) / 1000;
+      const productionPerSec = planet.mine_level * BASE_PRODUCTION;
+      
+      // Přičteme to, co se vytěžilo offline
+      displayIron = planet.iron_amount + (secondsElapsed * productionPerSec);
+      
+      // 3. Spuštění vizuálního "tikání" (každých 100ms)
+      interval = setInterval(() => {
+        // Přičteme desetinu vteřinové produkce
+        displayIron += (productionPerSec / 10);
+      }, 100);
+    }
+    loading = false;
+  });
+
+  // Funkce pro vylepšení dolu
+  async function upgradeMine() {
+    const cost = 100 * planet.mine_level; // Cena roste s úrovní
+    
+    if (displayIron >= cost) {
+      const newLevel = planet.mine_level + 1;
+      const newIron = displayIron - cost;
+
+      // Uložíme do Supabase
+      const { data, error } = await supabase
+        .from('planets')
+        .update({ 
+          mine_level: newLevel, 
+          iron_amount: newIron,
+          last_updated: new Date().toISOString() 
+        })
+        .eq('id', planet.id)
+        .select()
+        .single();
+
+      if (!error) {
+        planet = data;
+        displayIron = newIron;
+        alert("Důl vylepšen!");
+      }
+    } else {
+      alert("Nemáš dost železa!");
+    }
+  }
+
+  // Uklidíme interval při zavření stránky
+  onDestroy(() => {
+    if (interval) clearInterval(interval);
+  });
+</script>
+
+<main>
+  <h1>🚀 Vesmírná Kolonie</h1>
+
+  {#if loading}
+    <div class="loader">Přistávám na planetě...</div>
+  {:else if planet}
+    <div class="card">
+      <h2>Velitel: {planet.player_name}</h2>
+      
+      <div class="resource-box">
+        <span class="label">Sklad železa:</span>
+        <span class="value">{Math.floor(displayIron)}</span> 
+        <small>({(planet.mine_level * BASE_PRODUCTION).toFixed(1)}/s)</small>
+      </div>
+
+      <div class="building-box">
+        <p><strong>Důl na železo (Úroveň {planet.mine_level})</strong></p>
+        <button on:click={upgradeMine} disabled={displayIron < 100 * planet.mine_level}>
+          Vylepšit za {100 * planet.mine_level} železa
+        </button>
+      </div>
+    </div>
+  {:else}
+    <p>Chyba při spojení s orbitální stanicí.</p>
+  {/if}
+</main>
+
+<style>
+  :global(body) { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+  main { max-width: 500px; margin: 40px auto; text-align: center; }
+  .card { background: #1a1f29; padding: 2rem; border-radius: 15px; border: 1px solid #30363d; }
+  .resource-box { font-size: 2rem; margin: 20px 0; color: #4af2ff; }
+  .resource-box small { font-size: 0.9rem; color: #888; display: block; }
+  .building-box { margin-top: 30px; padding: 15px; background: #242c38; border-radius: 10px; }
+  button { 
+    background: #007bff; color: white; border: none; padding: 10px 20px; 
+    border-radius: 5px; cursor: pointer; font-weight: bold;
+  }
+  button:disabled { background: #444; cursor: not-allowed; }
+  button:hover:not(:disabled) { background: #0056b3; }
+</style>
+Co se v kódu děje:
+Offline těžba: Když hru zapneš, program spočítá rozdíl mezi "teď" a časem posledního uložení (last_updated). Tím hráč dostane suroviny za dobu, co byl pryč.
+
+setInterval: Každých 100 milisekund přičte kousek železa k proměnné displayIron. Díky tomu číslo na obrazovce krásně plynule roste.
+
+Vylepšení (Upgrade): Tlačítko odečte suroviny a pošle do Supabase nový stav (úroveň dolu a zbytek železa).
+
+Důležitý krok v Supabase:
+Aby ti fungovalo ukládání (update), musíš v Supabase vypnout (nebo nastavit) tzv. RLS (Row Level Security). Pro začátek a testování s kamarády můžeš v Table Editoru u tabulky planets kliknout na RLS disabled (nebo vytvořit "Policy", která dovolí komukoliv číst i zapisovat – ale pozor, to je jen pro testování!).
+
+Teď už by ti to mělo reálně těžit! Funguje ti plynulé přičítání čísel? Pokud ano, dalším krokem by mohlo být přidání žebříčku ostatních hráčů, abys viděl, jak jsou na tom tvoji kamarádi.
+
+Váš pokyn
+Ano, vse funguje. Diky. Ok, vytvorme zebricek.
+
+Odpověď Gemini
+To je skvělá zpráva! Teď už máš základní herní smyčku a tvoje planeta "žije". Přidání žebříčku (Leaderboard) je ten moment, kdy se z tvojí aplikace stává skutečná multiplayerová hra, protože hráči uvidí pokrok ostatních v reálném čase.
+
+V Supabase a Svelte je to díky "Realtime" funkcím hračka.
+
+1. Příprava v Supabase (Důležité!)
+Aby žebříček fungoval automaticky, musíš v Supabase zapnout Realtime pro tabulku planets.
+
+Jdi do Database -> Replication.
+
+Klikni na supabase_realtime (nebo podobný název).
+
+Najdi tabulku planets a přepni přepínač na ON.
+Tím zajistíš, že když tvůj kamarád vylepší důl, tobě se tabulka sama překreslí.
+
+2. Kód pro žebříček ve Svelte
+Upravíme tvůj soubor App.svelte. Přidáme novou proměnnou allPlanets a funkci, která bude hlídat změny u ostatních hráčů.
+
+Svelte
+<script>
+  import { onMount, onDestroy } from 'svelte';
+  import { supabase } from './supabase.js';
+
+  let planet = null;
+  let allPlanets = []; // Tady budou data pro žebříček
+  let loading = true;
+  let displayIron = 0;
+  let interval;
+
+  const TEST_PLANET_ID = 'tvoje-uuid-z-databaze'; 
+  const BASE_PRODUCTION = 1;
+
+  onMount(async () => {
+    // 1. Načtení tvé planety (stejné jako předtím)
+    const { data: myData } = await supabase.from('planets').select('*').eq('id', TEST_PLANET_ID).single();
+    if (myData) {
+      planet = myData;
+      const secondsElapsed = (new Date() - new Date(planet.last_updated)) / 1000;
+      displayIron = planet.iron_amount + (secondsElapsed * planet.mine_level * BASE_PRODUCTION);
+      
+      interval = setInterval(() => {
+        displayIron += (planet.mine_level * BASE_PRODUCTION / 10);
+      }, 100);
+    }
+
+    // 2. Načtení všech planet pro žebříček
+    await fetchLeaderboard();
+
+    // 3. REÁLNÝ ČAS: Sledujeme změny v tabulce planets
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'planets' }, () => {
+        fetchLeaderboard(); // Když se cokoliv změní, aktualizuj žebříček
+      })
+      .subscribe();
+
+    loading = false;
+  });
+
+  async function fetchLeaderboard() {
+    const { data } = await supabase
+      .from('planets')
+      .select('player_name, mine_level, iron_amount')
+      .order('mine_level', { ascending: false }) // Seřadit podle úrovně dolu
+      .limit(10);
+    allPlanets = data || [];
+  }
+
+  // ... (ponech funkci upgradeMine z minulého kroku) ...
+</script>
+
+<main>
+  <h1>🚀 Vesmírná Kolonie</h1>
+
+  {#if loading}
+    <p>Načítám galaxii...</p>
+  {:else}
+    <div class="game-container">
+      <section class="card">
+        <h2>Tvoje Základna: {planet?.player_name}</h2>
+        <div class="resource-box">
+          {Math.floor(displayIron)} <span>Fe</span>
+        </div>
+        <button on:click={upgradeMine} disabled={displayIron < 100 * planet?.mine_level}>
+          Vylepšit důl (Lvl {planet?.mine_level})
+        </button>
+      </section>
+
+      <section class="leaderboard">
+        <h3>🏆 Top Průzkumníci</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Hráč</th>
+              <th>Důl</th>
+              <th>Sklad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each allPlanets as p}
+              <tr class={p.player_name === planet.player_name ? 'highlight' : ''}>
+                <td>{p.player_name}</td>
+                <td>Lvl {p.mine_level}</td>
+                <td>{Math.floor(p.iron_amount)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  {/if}
+</main>
+
+<style>
+  /* Přidej si tyto styly pro hezčí tabulku */
+  .game-container { display: flex; flex-direction: column; gap: 20px; }
+  .leaderboard { background: #1a1f29; padding: 1rem; border-radius: 10px; border: 1px solid #30363d; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th { text-align: left; color: #888; font-size: 0.8rem; text-transform: uppercase; }
+  td { padding: 8px 0; border-bottom: 1px solid #242c38; }
+  .highlight { color: #4af2ff; font-weight: bold; }
+  .resource-box span { font-size: 1rem; color: #4af2ff; }
+</style>
+Co se změnilo?
+fetchLeaderboard: Funkce, která si ze Supabase vytáhne top 10 hráčů seřazených podle toho, kdo má nejvyšší úroveň dolu.
+
+supabase.channel: Tohle je to "kouzlo". Vytvoří to otevřené spojení se serverem. Jakmile tvůj kamarád klikne na "Upgrade", tvůj prohlížeč dostane zprávu a okamžitě zavolá fetchLeaderboard, aby se data na tvé obrazovce změnila, aniž bys musel stránku obnovovat.
+
+HTML Tabulka: Použili jsme Svelte blok {#each ...}, který projde seznam planet a vykreslí řádky tabulky.
+
+Další krok pro tebe:
+Teď můžeš poslat odkaz na svůj běžící projekt kamarádovi. Ale pozor! Aby mohl hrát on, musíš mít v tabulce v Supabase vytvořený další řádek s jiným ID.
+
+Chtěl bys teď vyzkoušet, jak udělat "Registraci", aby si kamarád mohl při prvním příchodu na stránku sám zvolit jméno a vytvořit si tak vlastní planetu?
+
+
+
+
+
+Gemini je AI a může dělat chyby (i co se týče lidí). Vaše soukromí a GeminiOtevře se v novém okně
+
+
+
+
+
+################################# UPRAVENA FUNKCI VERZE (spojeni 2 spolednich, aby funovali): #######################################
+
+<script>
+  import { onMount, onDestroy } from 'svelte';
+  import { supabase } from './supabase.js';
+
+  let planet = null;
+  let allPlanets = []; // Tady budou data pro žebříček
+  let loading = true;
+  let displayIron = 0; // Tohle číslo uvidí hráč "tikat"
+  let interval;
+
+  // TVOJE ID ZE SUPABASE (vlož sem to svoje z tabulky planets)
+  const TEST_PLANET_ID = '59e06ed1-fbdb-45a0-9038-e8b78e59b026'; 
+
+  // Konstanta: Kolik železa vyprodukuje 1. úroveň dolu za sekundu
+  const BASE_PRODUCTION = 1; 
+
+  onMount(async () => {
+    // 1. Načtení dat ze Supabase
+    const { data, error } = await supabase
+      .from('planets')
+      .select('*')
+      .eq('id', TEST_PLANET_ID)
+      .single();
+
+    if (error) {
+      console.error("Chyba:", error);
+    } else {
+      planet = data;
+      
+      // 2. Výpočet reálného stavu (pokud byl hráč dlouho pryč)
+      const now = new Date();
+      const lastUpdate = new Date(planet.last_updated);
+      const secondsElapsed = (now - lastUpdate) / 1000;
+      const productionPerSec = planet.mine_level * BASE_PRODUCTION;
+      
+      // Přičteme to, co se vytěžilo offline
+      displayIron = planet.iron_amount + (secondsElapsed * productionPerSec);
+      
+      // 3. Spuštění vizuálního "tikání" (každých 100ms)
+      interval = setInterval(() => {
+        // Přičteme desetinu vteřinové produkce
+        displayIron += (productionPerSec / 10);
+      }, 100);
+    }
+	
+	// 2. Načtení všech planet pro žebříček
+    await fetchLeaderboard();
+
+    // 3. REÁLNÝ ČAS: Sledujeme změny v tabulce planets
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'planets' }, () => {
+        fetchLeaderboard(); // Když se cokoliv změní, aktualizuj žebříček
+      })
+      .subscribe();
+
+    loading = false;
+  });
+  
+  async function fetchLeaderboard() {
+    const { data } = await supabase
+      .from('planets')
+      .select('player_name, mine_level, iron_amount')
+      .order('mine_level', { ascending: false }) // Seřadit podle úrovně dolu
+      .limit(10);
+    allPlanets = data || [];
+  }
+
+  // Funkce pro vylepšení dolu
+  async function upgradeMine() {
+    const cost = 100 * planet.mine_level; // Cena roste s úrovní
+    
+    if (displayIron >= cost) {
+      const newLevel = planet.mine_level + 1;
+      const newIron = displayIron - cost;
+
+      // Uložíme do Supabase
+      const { data, error } = await supabase
+        .from('planets')
+        .update({ 
+          mine_level: newLevel, 
+          iron_amount: newIron,
+          last_updated: new Date().toISOString() 
+        })
+        .eq('id', planet.id)
+        .select()
+        .single();
+
+      if (!error) {
+        planet = data;
+        displayIron = newIron;
+        alert("Důl vylepšen!");
+      }
+    } else {
+      alert("Nemáš dost železa!");
+    }
+  }
+
+  // Uklidíme interval při zavření stránky
+  onDestroy(() => {
+    if (interval) clearInterval(interval);
+  });
+</script>
+
+<main>
+  <h1>🚀 Vesmírná Kolonie</h1>
+
+  {#if loading}
+    <div class="loader">Přistávám na planetě...</div>
+  {:else if planet}
+    <div class="game-container">
+      <section class="card">
+		  <h2>Velitel: {planet.player_name}</h2>
+			  
+		  <div class="resource-box">
+			<span class="label">Sklad železa:</span>
+			<span class="value">{Math.floor(displayIron)}</span> 
+			<small>({(planet.mine_level * BASE_PRODUCTION).toFixed(1)}/s)</small>
+		  </div>
+
+		  <div class="building-box">
+			<p><strong>Důl na železo (Úroveň {planet.mine_level})</strong></p>
+			<button on:click={upgradeMine} disabled={displayIron < 100 * planet.mine_level}>
+			  Vylepšit za {100 * planet.mine_level} železa
+			</button>
+		  </div>
+		</section>
+
+		<section class="leaderboard">
+			<h3>🏆 Top Průzkumníci</h3>
+			<table>
+			  <thead>
+				<tr>
+				  <th>Hráč</th>
+				  <th>Důl</th>
+				  <th>Sklad</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				{#each allPlanets as p}
+				  <tr class={p.player_name === planet.player_name ? 'highlight' : ''}>
+					<td>{p.player_name}</td>
+					<td>Lvl {p.mine_level}</td>
+					<td>{Math.floor(p.iron_amount)}</td>
+				  </tr>
+				{/each}
+			  </tbody>
+			</table>
+		  </section>
+	  </div>
+	
+  {:else}
+    <p>Chyba při spojení s orbitální stanicí.</p>
+  {/if}
+</main>
+
+<style>
+  :global(body) { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+  main { max-width: 500px; margin: 40px auto; text-align: center; }
+  .card { background: #1a1f29; padding: 2rem; border-radius: 15px; border: 1px solid #30363d; }
+  .resource-box { font-size: 2rem; margin: 20px 0; color: #4af2ff; }
+  .resource-box small { font-size: 0.9rem; color: #888; display: block; }
+  .building-box { margin-top: 30px; padding: 15px; background: #242c38; border-radius: 10px; }
+  button { 
+    background: #007bff; color: white; border: none; padding: 10px 20px; 
+    border-radius: 5px; cursor: pointer; font-weight: bold;
+  }
+  button:disabled { background: #444; cursor: not-allowed; }
+  button:hover:not(:disabled) { background: #0056b3; }
+  .leaderboard { background: #1a1f29; padding: 1rem; border-radius: 10px; border: 1px solid #30363d; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th { text-align: left; color: #888; font-size: 0.8rem; text-transform: uppercase; }
+  td { padding: 8px 0; border-bottom: 1px solid #242c38; }
+  .highlight { color: #4af2ff; font-weight: bold; }
+  .resource-box span { font-size: 1rem; color: #4af2ff; }
+</style>
+
+##############################################################################################################
+
+
+
+
+Supabase:
+https://supabase.com/dashboard/org/pmbfrpcqjlnijwoycpvt
+Project name: Vesmirna-hra
+Project ID: lyrbkplbjlnoqmkjsafs
+xkoscak@gmail.com
+
+Table: planets
+ * RLS: diablsed
+ * Realtime: enabled
+
+
+
+Svelte
+https://svelte.dev/
+
+
+
+Chocolatey:
+https://community.chocolatey.org/courses/installation/installing?method=installing-chocolatey#powershell
+
+Now run the following command:
+
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+
+
+
+Spustit (v PowerShellu - resp. klidne pres Windows Terminal):
+PS D:\DEVELOPMENT\vesmirna-hra\vesmirna-hra\src> npm run dev
+npm run dev
+
+
+Game on localhost:
+
+http://localhost:5173/
+
+
+
+
+
+
