@@ -760,3 +760,117 @@ http://localhost:5173/
 
 
 
+
+
+
+
+    -- 1. Add user_id column and link it to auth.users
+    ALTER TABLE planets ADD COLUMN user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+    
+    -- 2. Make user_id unique so one user = one planet
+    ALTER TABLE planets ADD CONSTRAINT unique_user_planet UNIQUE (user_id);
+    
+    -- 3. Enable Row Level Security (RLS)
+    ALTER TABLE planets ENABLE ROW LEVEL SECURITY;
+    
+    -- 4. Policy: Users can only see and update their own planet
+    CREATE POLICY "Users can only see their own planet" ON planets
+      FOR SELECT USING (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can only update their own planet" ON planets
+      FOR UPDATE USING (auth.uid() = user_id);
+    
+    -- 5. Policy: Anyone can see the leaderboard
+    CREATE POLICY "Anyone can see the leaderboard" ON planets
+    FOR SELECT USING (true);
+
+
+
+     -- 1. Create the Profiles table
+     CREATE TABLE public.profiles (
+       id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+       player_name TEXT NOT NULL,
+       created_at TIMESTAMPTZ DEFAULT NOW()
+     );
+     
+     -- 2. Update the Planets table to link to Profiles
+     -- (Assuming you already added user_id in the previous step)
+     ALTER TABLE public.planets DROP COLUMN IF EXISTS player_name;
+     ALTER TABLE public.planets ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+     
+     -- 3. Enable RLS on Profiles
+     ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+     
+     -- 4. Policies for Profiles
+     CREATE POLICY "Users can view all profiles (for leaderboard)" ON public.profiles FOR SELECT USING (true);
+     CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+
+
+    -- 1. Allow users to INSERT their own profile
+    CREATE POLICY "Users can insert their own profile"
+    ON public.profiles
+    FOR INSERT
+    WITH CHECK (auth.uid() = id);
+    
+    -- 2. (Optional but recommended) Do the same for the planets table
+    CREATE POLICY "Users can insert their own planet"
+    ON public.planets
+    FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+
+
+
+   -- Allow users to create their own planet row
+   CREATE POLICY "Users can insert their own planet"
+   ON public.planets
+   FOR INSERT
+   WITH CHECK (auth.uid() = user_id);
+
+
+
+
+    -- 1. Create a function to handle new user signups
+    CREATE OR REPLACE FUNCTION public.handle_new_user()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      -- Create the profile
+      INSERT INTO public.profiles (id, player_name)
+      VALUES (new.id, COALESCE(new.raw_user_meta_data->>'player_name', 'Nový Průzkumník'));
+    
+      -- Create the starting planet
+      INSERT INTO public.planets (user_id, iron_amount, mine_level, last_updated)
+      VALUES (new.id, 100, 1, NOW());
+   
+      RETURN new;
+    END;
+    $$ LANGUAGE plpgsql SECURITY DEFINER;
+   
+    -- 2. Create the trigger
+    CREATE OR REPLACE TRIGGER on_auth_user_created
+      AFTER INSERT ON auth.users
+      FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+
+
+
+    -- Add new building levels and resource states
+    ALTER TABLE planets
+    ADD COLUMN solar_plant_level INTEGER DEFAULT 1,
+    ADD COLUMN warehouse_level INTEGER DEFAULT 1,
+    ADD COLUMN energy_amount FLOAT DEFAULT 0;
+    
+    -- Optionally, you can set initial values for existing rows
+    UPDATE planets SET
+      solar_plant_level = 1,
+      warehouse_level = 1,
+      energy_amount = 50
+    WHERE solar_plant_level IS NULL;
+
+
+
+
+
+
+
