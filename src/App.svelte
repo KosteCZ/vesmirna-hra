@@ -67,6 +67,24 @@
     };
   });
 
+  async function retryConnection() {
+    console.log("Manuální restart připojení...");
+    loading = true;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      user = session?.user || null;
+      if (user) {
+        await fetchPlanetData();
+      } else {
+        loading = false;
+      }
+      await fetchLeaderboard();
+    } catch (e) {
+      console.error("Chyba při restartu:", e);
+      loading = false;
+    }
+  }
+
   async function fetchPlanetData() {
     if (!user) {
       loading = false;
@@ -226,7 +244,7 @@
   {:else if loading}
     <div class="loader-container">
       <div class="loader">Skenuji orbitu...</div>
-      <button class="retry-btn" on:click={fetchPlanetData}>Zkusit znovu</button>
+      <button class="retry-btn" on:click={retryConnection}>Zkusit znovu</button>
     </div>
   {:else if planet}
     <div class="dashboard">
